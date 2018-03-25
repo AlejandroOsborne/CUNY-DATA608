@@ -2,13 +2,52 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_table_experiments as dt
 import pandas as pd
+import datetime
 
 app = dash.Dash()
 
-df = pd.read_csv('riverkeeper_data_2013', parse_dates=['Date'])
+app.scripts.config.serve_locally=True
 
-df['Date']=df['Date'].dt.strftime('%Y-%m-%d')
+df = pd.read_csv('https://raw.githubusercontent.com/ilyakats/'
+                 'CUNY-DATA608/master/hw4/'
+                 'riverkeeper_data_2013.csv', 
+                 parse_dates=['Date'])
+
+df['EnteroNo'] = df['EnteroCount']
+df['EnteroNo'] = df['EnteroCount'].map(lambda x: x.lstrip('<>')).astype(int)
+
+# df['Date']=df['Date'].dt.strftime('%Y-%m-%d')
+
+# max_days = (df['Date'].max()-df['Date'].min()).days
+
+#cur_df = df[df['Date']<d]
+#idx = cur_df.groupby(['Site'])['Date'].transform(max) == cur_df['Date']
+#latest_df = cur_df[idx]
+
+def generate_table(dataframe):
+    rows = []
+    for i in range(len(dataframe)):
+        row = []
+        for col in dataframe.columns:
+            value = dataframe.iloc[i][col]
+            if col=='Site':
+                style = {'textAlign':'Left'}
+            else:
+                style = {'textAlign':'Center'}
+            if col=='Entero Count':
+                if value>60:
+                    style['background'] = '#FC3232'
+                    style['text'] = '#FFFFFF'
+                else:
+                    style['background'] = '#32FF32'
+            row.append(html.Td(value, style=style))
+        rows.append(html.Tr(row))
+    return html.Table(
+        [html.Tr([html.Th(col) for col in dataframe.columns])] +
+        rows
+    )
 
 app.layout = html.Div(children=[
     html.H1(children='Hello 678'),
@@ -20,45 +59,54 @@ app.layout = html.Div(children=[
             html.Label('Pick a date:'),
             dcc.Slider(
                     id='date-slider',
-                    min=0, max=365, value=25,
+                    min=0, max=2922, value=365,
                     marks={
-                            0: {'label': 'Jan-2018'},
-                            196: {'label': 'Jun-2018'},
-                            365: {'label': 'Dec-2018'}
+                            0: {'label': ''},
+                            365: {'label': '2007'},
+                            730: {'label': '2008'},
+                            1096: {'label': '2009'},
+                            1461: {'label': '2010'},
+                            1826: {'label': '2011'},
+                            2191: {'label': '2012'},
+                            2557: {'label': '2013'},
+                            2922: {'label': ''}
                             },
                     included=False
-                    ),
-            html.Div(id='output-date-slider')
+                    )
             ],
     style={
             'borderBottom': 'thin lightgrey solid',
             'backgroundColor': 'rgb(250, 250, 250)',
             'padding': '10px 5px 20px 5px'
             }),
-    
-    html.Div([
-    html.Label('Plot'),
-
-    dcc.Graph(
-        id='example-graph',
-        figure={
-            'data': [
-                {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
-                {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
-            ],
-            'layout': {
-                'title': 'Dash Data Visualization'
-            }
-        }
-    )])
+    html.Div(id='output-date-slider')
 ])
     
+    
+#@app.callback(
+#        dash.dependencies.Output('output-date-slider', 'rows'), 
+#        [dash.dependencies.Input('date-slider', 'value')])
+
+#def update_rows(value):
+#    d = datetime.datetime(2006, 1, 1, 0, 0) + datetime.timedelta(days=value)
+#    cur_df = df[df['Date']<d]
+#    idx = cur_df.groupby(['Site'])['Date'].transform(max) == cur_df['Date']
+#    latest_df = cur_df[idx]
+#    return latest_df.to_dict('records')
+
+
 @app.callback(
         dash.dependencies.Output('output-date-slider', 'children'),
         [dash.dependencies.Input('date-slider', 'value')])
 
 def update_output(value):
-    return 'You have selected "{}"'.format(value)
+    d = datetime.datetime(2006, 1, 1, 0, 0) + datetime.timedelta(days=value)
+    cur_df = df[df['Date']<d]
+    idx = cur_df.groupby(['Site'])['Date'].transform(max) == cur_df['Date']
+    latest_df = cur_df[idx][['Site','Date','EnteroNo','SampleCount']]
+    latest_df.columns = ['Site', 'Date', 'Entero Count', 'No of Samples']
+    latest_df['Date'] = latest_df['Date'].dt.strftime('%m/%d/%Y')
+    return generate_table(latest_df)
 
 
 if __name__ == '__main__':
