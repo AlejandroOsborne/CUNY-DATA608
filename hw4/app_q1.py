@@ -7,6 +7,7 @@ import datetime
 from colour import Color
 
 app = dash.Dash()
+server = app.server
 
 # Variables
 text_style = dict(color='#444', fontFamily='sans-serif', fontWeight=300)
