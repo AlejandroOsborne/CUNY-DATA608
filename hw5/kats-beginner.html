@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>Kats - Assignment 5: Beginner</title>
+<style>
+table 		{border-collapse: collapse;}
+table, td	{border: 1px solid grey;}
+td 			{
+				padding: 5px;
+				text-align: center;
+			}
+td:hover 	{background-color: #f5f5f5;}
+</style>
+</head>
+<body>
+<h1>DATA 608: Assignment 5</h1>
+<h2>Ilya Kats</h2>
+<h3>Beginner Task 1</h3>
+<p>Create a function to reverse any word that you type in.</p>
+<script type="text/javascript">
+// Reverse provided text
+function reverseText(w){
+	var i, s="";
+	var l = w.length;
+	for (i = l-1; i >= 0; i--) {
+		s=s+w[i];
+	}
+	return(s);
+}
+function reverse(){
+	var r = document.getElementById("wordReverse");
+	r.innerHTML=reverseText(document.getElementById("word").value);
+}
+</script>
+<p>
+<form>
+    <input id="word" type="text">
+    <input type="button" value="Reverse Text" onClick="reverse();">
+</form>
+</p>
+Reversed text: <b id="wordReverse"></b>
+
+<h3>Beginner Task 2</h3>
+<p>Create a function that takes an input number, and prints a table with the first 20 multiples of the number, in order 5x4.</p>
+<script type="text/javascript">
+// Generate HTML table of 20 multiples
+function mult(){
+	var i, j, s;
+	var t = document.getElementById("targetTable");
+	var n = document.getElementById("num").value;
+	s = "<b>Table of First 20 Multiples of "+n+":</b><br><table>";
+
+	for (i = 1; i <= 5; i++) {
+		s=s+"<tr>"
+		for (j = 1; j <= 4; j++) {
+			s=s+"<td>"+(n*((i-1)*4+j))+"</td>";
+		}
+		s=s+"</tr>"
+	}
+	t.innerHTML = s+"</table>";
+}
+</script>
+<p>
+<form>
+    <input id="num" type="number" size="4">
+    <input type="button" value="Generate Multiples" onClick="mult();">
+</form>
+</p>
+<div id="targetTable"></div>
+</body>
+</html>
