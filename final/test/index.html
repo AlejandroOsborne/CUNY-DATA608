@@ -79,7 +79,7 @@
 
             // Paints all of the paths.
             function paintPathSampler() {
-                d3.json("path_sampler.json", function (data) {
+                d3.json("https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/test/path_sampler.json", function (data) {
                     console.log(data[0]);
 
                     paintPath(data[0]);

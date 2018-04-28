@@ -21,7 +21,7 @@
 <script src="L.D3SvgOverlay.min.js"></script>
 <script>
 
-var map = L.map("map-canvas",{center:[46.81509864599243, 8.3221435546875],zoom:8});
+var map = L.map("map-canvas",{center:[40.773889, -73.983611],zoom:12});
 var Esri_WorldTopoMap = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
 	attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
 });
@@ -42,7 +42,7 @@ var citiesOverlay = L.d3SvgOverlay(function(sel,proj){
     .attr('fill',function(d){return (d.place == 'city') ? "red" : "blue";});
 });
 
-d3.csv("https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/test/swiss-cities.csv",function(data){
+d3.csv("https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/test/schools.csv",function(data){
   cities = data.map(function(d){
     d.latLng = [+d.lat,+d.lng];
     d.population = (d.population == '') ? 2000 : +d.population; //NAs
