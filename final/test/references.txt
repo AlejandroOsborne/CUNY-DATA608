@@ -1,2 +1,3 @@
 http://bl.ocks.org/xEviL/4921fff1d70f5601d159
 http://bl.ocks.org/emeeks/f8c0220c54ec8347ea95
+https://gis.stackexchange.com/questions/108544/displaying-a-box-with-text-on-a-leaflet-map
