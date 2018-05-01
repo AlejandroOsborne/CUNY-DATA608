@@ -30,7 +30,6 @@ var svg = d3.select("body").append("svg")
 	.attr("width", width)
 	.attr("height", height);
 
-
 var g2 = svg.append("g"); // pie charts
 
 // Projection variables
@@ -38,8 +37,6 @@ var projection = d3.geoMercator()
 				   .center([81,22])
 				   .scale(800)
 				   .translate([width/2,height/2]);
-
-//var path = d3.geoPath().projection(projection);
 
 // Pie chart variables:
 var arc = d3.arc()

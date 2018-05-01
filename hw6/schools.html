@@ -43,51 +43,9 @@ var schoolsOverlay = L.d3SvgOverlay(function(sel,proj){
 		.append('g')
 		.attr('class','arc')
 		.append('path')
-		.attr('d',arc.outerRadius(function(d){ return 7; }))
+		.attr('d',arc.outerRadius(function(d){ return 5; }))
 		.attr('fill',function(d,i){ return color[i+1]; });
-
-//	var pieData = d3.layout.pie()
-//          .value(function(d) { return d.shows; });
-//  var schoolsUpd = sel.selectAll('circle').data(schools)
-//  	.enter()
-//    .append('circle')
-//    .attr('r',10)
-//    .attr('cx',function(d){return proj.latLngToLayerPoint(d.latLng).x;})
-//    .attr('cy',function(d){return proj.latLngToLayerPoint(d.latLng).y;})
-//    .attr('stroke','black')
-//    .attr('stroke-width',1)
-//    .attr('fill','red');
-//schoolsUpd.selectAll('path')
-//    .data(schools)
-//  	.enter()
-//  	.append("path")
-//    .attr('cx',function(d){return proj.latLngToLayerPoint(d.latLng).x;})
-//    .attr('cy',function(d){return proj.latLngToLayerPoint(d.latLng).y;})
-//    .attr("d", d3.svg.arc().outerRadius(10))
-//    .style("fill", function(d,i) {return set3[i]});
-
 });
-
-
-//  function pieMarker() {
-// d3.selectAll("g.marker").selectAll("*").remove();
-//    var pieChart = d3.layout.pie();
-//    var newArc = d3.svg.arc().outerRadius(10);
-//    var set3 = ["#66c2a5","#fc8d62"];
-//
-//    pieChart.value(function(d) {return d});
-//    d3.selectAll("g.marker").each(function(d) {
-//      var pieData = d3.values(d).splice(3,7);
-//      var pieChart = d3.layout.pie();
-//
-//      d3.select(this).append("circle").attr("r",11).style("fill", "black").style("stroke","black")
-//
-//      d3.select(this).selectAll("path").data(pieChart(pieData)).enter().append("path").attr("d", function(d) {return newArc(d)})
-//      .style("fill", function(d,i) {return set3[i]})
-//      .style("stroke", function(d,i) {return set3[i]})
-//      .style("stroke-width", "1px")
-//    })
-//  }
 
 d3.csv("https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/test/schools2.csv",function(data){
   schools = data.map(function(d){
