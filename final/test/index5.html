@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
 	<style>
-		svg {	
+		svg {
 			background: #9ecae1;
 		}
 		.mesh {
@@ -11,27 +11,26 @@
 			stroke: white;
 			stroke-width: 0.5px;
 		}
-		
+
 		.land {
 			fill: #41ab5d;
 		}
-	</style>	
+	</style>
 	<script src="https://d3js.org/d3.v4.min.js"></script>
-	<script src="https://d3js.org/topojson.v1.min.js"></script>	
+	<script src="https://d3js.org/topojson.v1.min.js"></script>
 </head>
 <body>
 
 <script type="text/javascript">
 var width = 960;
 var height = 500;
-var radius = 30;
-	
+
 // SVG variables
 var svg = d3.select("body").append("svg")
 	.attr("width", width)
 	.attr("height", height);
-	
-var g1 = svg.append("g"); // background
+
+
 var g2 = svg.append("g"); // pie charts
 
 // Projection variables
@@ -39,57 +38,38 @@ var projection = d3.geoMercator()
 				   .center([81,22])
 				   .scale(800)
 				   .translate([width/2,height/2]);
-				   
-var path = d3.geoPath().projection(projection);
+
+//var path = d3.geoPath().projection(projection);
 
 // Pie chart variables:
 var arc = d3.arc()
 			.innerRadius(0)
-			.outerRadius(radius);
-			
+			.outerRadius(30);
+
 var pie = d3.pie()
-			.sort(null)
 			.value(function(d) { return d; });
-			
+
 var color = d3.schemeCategory10;
 
-// Draw geographic features
-d3.json("world.json", function(error, world) {
-    g1.insert("path", ".land")
-		.datum(topojson.feature(world, world.objects.countries))
-		.attr("class", "land")
-		.attr("d", path);
-		
-	g1.append("path")
-      .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
-      .attr("class", "mesh")
-      .attr("d", path);
-});
+
 
 // Draw pie charts,
-d3.csv("water.csv", function(error, water) {
+d3.csv("https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/test/water.csv", function(error, water) {
 	var points = g2.selectAll("g")
 		.data(water)
 		.enter()
 		.append("g")
 		.attr("transform",function(d) { return "translate("+projection([d.lon,d.lat])+")" })
 		.attr("class","pies")
-		
-	points.append("text")
-		.attr("y", -radius - 5)
-		.text(function(d) { return d.label })
-		.style('text-anchor','middle');
-		
 	var pies = points.selectAll(".pies")
 		.data(function(d) { return pie(d.data.split(['-'])); })
 		.enter()
 		.append('g')
 		.attr('class','arc');
-	
 	pies.append("path")
 	  .attr('d',arc)
       .attr("fill",function(d,i){
-           return color[i+1];     
+           return color[i+1];
       });
 });
 </script>
