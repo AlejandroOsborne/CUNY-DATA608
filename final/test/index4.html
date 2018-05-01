@@ -34,37 +34,100 @@ var citiesOverlay = L.d3SvgOverlay(function(sel,proj){
 					.attr("class", "tooltip")
 					.style("opacity", 0);
 
-//  var minLogPop = Math.log2(d3.min(cities,function(d){return d.population;}));
-  var citiesUpd = sel.selectAll('circle').data(cities);
-  citiesUpd.enter()
-    .append('circle')
-    .attr('r',3)
-    .attr('cx',function(d){return proj.latLngToLayerPoint(d.latLng).x;})
-    .attr('cy',function(d){return proj.latLngToLayerPoint(d.latLng).y;})
-    .attr('stroke','black')
-    .attr('stroke-width',1)
-    .attr('fill','red')
-    .bindTooltip("my tooltip text").openTooltip();
-//    .on("mouseover", function(d) {
-//    	tooltip.transition()
-//			.duration(200)
-//	        .style("opacity", .9);
-//	    tooltip.text(d.name)
-//	        .style("left", (d3.event.pageX) + "px")
-//	        .style("top", (d3.event.pageY - 28) + "px");
-//	    })
-//	.on("mouseout", function(d) {
-//		tooltip.transition()
-//			.duration(500)
-//			.style("opacity", 0);
-//       });
+
+
+    var set3 = ["#66c2a5","#fc8d62"];
+    var arc = d3.svg.arc().outerRadius(10);
+    var pie = d3.layout.pie().value(function(d) { return d.value; });
+
+//    d3.selectAll("circle").data(cities).each(function(d) {
+//      var pieChart = d3.layout.pie();
+
+//      d3.select(this).append("circle").attr("r",10).style("fill", "black").style("stroke","black")
+
+//      d3.select(this).selectAll("path").data(pieChart(d.shows)).enter().append("path").attr("d", function(d) {return newArc(d)})
+//      .style("fill", function(d,i) {return set3[i]})
+//      .style("stroke", function(d,i) {return set3[i]})
+//      .style("stroke-width", "1px")
+//    });
+var color = d3.schemeCategory10;
+	var arc = d3.svg.arc()
+				.innerRadius(0)
+			.outerRadius(10);
+	var pie = d3.layout.pie()
+			.value(function(d) { return d.shows; });
+	var svg = d3.select("body").append("svg");
+	var g2 = svg.append("g"); // pie charts
+	var points = g2.selectAll("g")
+		.data(cities)
+		.enter()
+		.append("g")
+		.attr("transform",function(d) { return "translate("+proj.latLngToLayerPoint(d.latLng).x+","+proj.latLngToLayerPoint(d.latLng).y+")" })
+		.attr("class","pies");
+	var pies = points.selectAll(".pies")
+			.data(pie)
+			.enter()
+			.append('g')
+			.attr('class','arc');
+
+		pies.append("path")
+		  .attr('d',arc)
+	      .attr("fill",function(d,i){
+	           return color[i+1];
+      });
+
+//	var pieData = d3.layout.pie()
+//          .value(function(d) { return d.shows; });
+//  var citiesUpd = sel.selectAll('circle').data(cities)
+//  	.enter()
+//    .append('circle')
+//    .attr('r',10)
+//    .attr('cx',function(d){return proj.latLngToLayerPoint(d.latLng).x;})
+//    .attr('cy',function(d){return proj.latLngToLayerPoint(d.latLng).y;})
+//    .attr('stroke','black')
+//    .attr('stroke-width',1)
+//    .attr('fill','red');
+//citiesUpd.selectAll('path')
+//    .data(cities)
+//  	.enter()
+//  	.append("path")
+//    .attr('cx',function(d){return proj.latLngToLayerPoint(d.latLng).x;})
+//    .attr('cy',function(d){return proj.latLngToLayerPoint(d.latLng).y;})
+//    .attr("d", d3.svg.arc().outerRadius(10))
+//    .style("fill", function(d,i) {return set3[i]});
 });
+
+//.attr("transform", "translate(20,20)");
+
+//  function pieMarker() {
+// d3.selectAll("g.marker").selectAll("*").remove();
+//    var pieChart = d3.layout.pie();
+//    var newArc = d3.svg.arc().outerRadius(10);
+//    var set3 = ["#66c2a5","#fc8d62"];
+//
+//    pieChart.value(function(d) {return d});
+//    d3.selectAll("g.marker").each(function(d) {
+//      var pieData = d3.values(d).splice(3,7);
+//      var pieChart = d3.layout.pie();
+//
+//      d3.select(this).append("circle").attr("r",11).style("fill", "black").style("stroke","black")
+//
+//      d3.select(this).selectAll("path").data(pieChart(pieData)).enter().append("path").attr("d", function(d) {return newArc(d)})
+//      .style("fill", function(d,i) {return set3[i]})
+//      .style("stroke", function(d,i) {return set3[i]})
+//      .style("stroke-width", "1px")
+//    })
+//  }
 
 d3.csv("https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/test/schools2.csv",function(data){
   cities = data.map(function(d){
     d.latLng = [+d.lat,+d.lng];
+    d.art = +d.art;
+    d.concert = +d.concert;
+    d.shows = [d.art,d.concert];
     return d;
   });
+  console.log(data[0]);
   citiesOverlay.addTo(map);
 });
 
