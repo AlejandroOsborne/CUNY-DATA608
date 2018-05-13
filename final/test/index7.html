@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DATA 608 Project 6</title>
+
+    <style type="text/css">
+        html { height: 100% }
+        body { height: 100%; margin: 0; padding: 0 }
+        #map-canvas { height: 100% }
+    </style>
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css'
+    	rel='stylesheet' type='text/css'/>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+<script type="text/javascript" src="http://gc.kis.v2.scr.kaspersky-labs.com/C0F1283D-97B3-1441-91CB-F61575FA69B3/main.js" charset="UTF-8"></script></head>
+<body>
+<div id="map-canvas"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.9/d3.min.js"></script>
+<script src="L.D3SvgOverlay.min.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+var map = L.map('map-canvas',{center:[40.732589, -73.983611],zoom:11});
+var Esri_WorldTopoMap = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+});
+Esri_WorldTopoMap.addTo(map);
+
+var schools = [];
+var schoolsOverlay = L.d3SvgOverlay(function(sel,proj){
+	var color = d3.schemeCategory10;
+	var arc = d3.svg.arc();
+	var pie = d3.layout.pie().value(function(d) { return d; });
+	var points = sel.selectAll('g')
+		.data(schools)
+		.enter()
+		.append('g')
+		.attr('transform',function(d) { return 'translate('+proj.latLngToLayerPoint(d.latLng).x+','+proj.latLngToLayerPoint(d.latLng).y+')' })
+		.attr('class','pies');
+	var pies = points.selectAll('.pies')
+		.data(function(d) { return pie(d.shows); })
+		.enter()
+		.append('g')
+		.attr('class','arc')
+		.append('path')
+		.attr('d',arc.outerRadius(function(d){ return 7; }))
+		.attr('fill',function(d,i){ return color[i+1]; });
+
+//	var pieData = d3.layout.pie()
+//          .value(function(d) { return d.shows; });
+//  var schoolsUpd = sel.selectAll('circle').data(schools)
+//  	.enter()
+//    .append('circle')
+//    .attr('r',10)
+//    .attr('cx',function(d){return proj.latLngToLayerPoint(d.latLng).x;})
+//    .attr('cy',function(d){return proj.latLngToLayerPoint(d.latLng).y;})
+//    .attr('stroke','black')
+//    .attr('stroke-width',1)
+//    .attr('fill','red');
+//schoolsUpd.selectAll('path')
+//    .data(schools)
+//  	.enter()
+//  	.append("path")
+//    .attr('cx',function(d){return proj.latLngToLayerPoint(d.latLng).x;})
+//    .attr('cy',function(d){return proj.latLngToLayerPoint(d.latLng).y;})
+//    .attr("d", d3.svg.arc().outerRadius(10))
+//    .style("fill", function(d,i) {return set3[i]});
+
+});
+
+
+//  function pieMarker() {
+// d3.selectAll("g.marker").selectAll("*").remove();
+//    var pieChart = d3.layout.pie();
+//    var newArc = d3.svg.arc().outerRadius(10);
+//    var set3 = ["#66c2a5","#fc8d62"];
+//
+//    pieChart.value(function(d) {return d});
+//    d3.selectAll("g.marker").each(function(d) {
+//      var pieData = d3.values(d).splice(3,7);
+//      var pieChart = d3.layout.pie();
+//
+//      d3.select(this).append("circle").attr("r",11).style("fill", "black").style("stroke","black")
+//
+//      d3.select(this).selectAll("path").data(pieChart(pieData)).enter().append("path").attr("d", function(d) {return newArc(d)})
+//      .style("fill", function(d,i) {return set3[i]})
+//      .style("stroke", function(d,i) {return set3[i]})
+//      .style("stroke-width", "1px")
+//    })
+//  }
+
+d3.csv("https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/test/schools2.csv",function(data){
+  schools = data.map(function(d){
+    d.latLng = [+d.lat,+d.lng];
+    d.art = +d.art;
+    d.concert = +d.concert;
+    d.dance = +d.dance;
+    d.film = +d.film;
+    d.theater = +d.theater;
+    d.other = +d.other;
+    d.total = d.art+d.concert+d.dance+d.film+d.theater+d.other;
+    if (d.total==0) {d.none=1} else {d.none=0}
+    d.shows = [d.art,d.concert,d.dance,d.film,d.theater,d.other,d.none];
+    return d;
+  });
+  schoolsOverlay.addTo(map);
+});
+</script>
+</body>
+</html>

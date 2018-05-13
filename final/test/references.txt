@@ -1,3 +1,22 @@
 http://bl.ocks.org/xEviL/4921fff1d70f5601d159
 http://bl.ocks.org/emeeks/f8c0220c54ec8347ea95
 https://gis.stackexchange.com/questions/108544/displaying-a-box-with-text-on-a-leaflet-map
+http://www.mapdevelopers.com/batch_geocode_tool.php
+http://bl.ocks.org/tnightingale/4668062
+https://steven-hall-7eoj.squarespace.com/blog/2013/12/1/hexbins-with-d3-and-leaflet-maps
+
+https://leafletjs.com/examples/layers-control/
+
+
+Q3
+Person responsible for arts education programs:
+1 - Full time supervisor dedicated solely to the arts
+2 - Full time supervisor with duties other than the arts
+3 - Part-time arts supervisor who also teaches
+4 - No arts supervisor
+0 - No response
+
+Q6
+Number of part-time certified arts teachers on staff
+Dance / Music / Theater / Visual Arts
+
