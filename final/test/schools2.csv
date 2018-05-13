@@ -101,7 +101,7 @@ code,name,lat,lng,art,concert,dance,film,theater,other
 03M258,Community Action School - MS 258,40.791357,-73.971071,1,0,0,0,0,0
 03M291,West End Secondary School,40.772487,-73.988153,3,3,3,2,3,0
 03M299,The Maxine Greene HS for Imaginative Inquiry,40.774846,-73.985666,1,1,0,0,2,0
-03M307,"Urban Assembly School for Media Studies, The",40.774846,-73.985566,2,0,2,0,2,0
+03M307,"Urban Assembly School for Media Studies, The",40.774846,-73.985466,2,0,2,0,2,0
 03M333,P.S. 333 Manhattan School for Children,40.791357,-73.971071,1,6,15,1,20,0
 03M334,The Anderson School,40.780933,-73.977723,18,10,5,14,8,0
 03M402,The Urban Assembly School for Green Careers,40.786011,-73.974096,1,1,0,1,0,0
@@ -112,10 +112,10 @@ code,name,lat,lng,art,concert,dance,film,theater,other
 03M421,West Prep Academy,40.799078,-73.965096,3,3,4,1,1,1
 03M452,P.S. 452,40.771912,-73.987684,5,15,15,20,20,3
 03M485,Fiorello H. LaGuardia High School of Music & Art and Performing Arts,40.774133,-73.985804,15,30,5,1,15,0
-03M492,"High School for Law, Advocacy and Community Justice",40.774846,-73.985466,0,1,0,0,0,0
-03M494,High School of Arts and Technology,40.774846,-73.985366,4,0,0,0,0,0
+03M492,"High School for Law, Advocacy and Community Justice",40.774846,-73.985866,0,1,0,0,0,0
+03M494,High School of Arts and Technology,40.774646,-73.985666,4,0,0,0,0,0
 03M505,Edward A. Reynolds West Side High School,40.797135,-73.966887,1,2,1,1,1,0
-03M541,Manhattan / Hunter Science High School,40.774846,-73.985266,0,0,0,0,0,0
+03M541,Manhattan / Hunter Science High School,40.775046,-73.985666,0,0,0,0,0,0
 03M859,Special Music School,40.775256,-73.98298,1,25,0,0,0,0
 03M860,Frederick Douglass Academy II Secondary School,40.802284,-73.95408,1,0,2,0,2,0
 03M862,Mott Hall II,40.802647,-73.96606,0,3,2,0,2,3
