@@ -94,20 +94,21 @@ L.HexLayer = L.Class.extend({
     _createHexagons: function (container) {
         var layout = this._layout,
             data = this._data.features.map(function (d) {
-                return this._project(d.geometry.coordinates);
+                return this._project(d.geometry.coordinates, d.properties.events, d.properties.name);
             }, this),
             bins = layout(data),
             hexagons = container.selectAll(".hexagon").data(bins);
 
         // Create hexagon elements when data is added.
         var path = hexagons.enter().append("path").attr("class", "hexagon");
+
         this._applyStyle(path);
 
         // Position hexagon elements.
         hexagons.attr("d", function (d) {
-            // Setting "M" ensures each hexagon is drawn at its correct location.
-            return "M" + d.x + "," + d.y + layout.hexagon();
-        });
+		            // Setting "M" ensures each hexagon is drawn at its correct location.
+		            return "M" + d.x + "," + d.y + layout.hexagon();
+		        });
     },
 
     _applyStyle: function (hexagons) {
@@ -116,9 +117,9 @@ L.HexLayer = L.Class.extend({
         }
     },
 
-    _project: function (x) {
+    _project: function (x, w, n) {
         var point = this._map.latLngToLayerPoint([x[1], x[0]]);
-        return [point.x, point.y];
+        return [point.x, point.y, w, n];
     },
 
     _translateBounds: function (d3_bounds) {

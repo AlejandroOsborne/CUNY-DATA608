@@ -78,7 +78,8 @@
 						      properties: {
 						        code: d.code,
 						        name: d.name,
-						        events: d.art+d.concert+d.dance+d.film+d.theater+d.other
+						        events: parseInt(d.art)+parseInt(d.concert)+parseInt(d.dance)
+						        	+parseInt(d.film)+parseInt(d.theater)+parseInt(d.other)
 						      },
 						      type: "Feature",
 						      geometry: {
@@ -90,7 +91,9 @@
 						  return data;
 						}
 						var geoData = { type: "FeatureCollection", features: reformat(data) };
-          				L.hexLayer(geoData, {applyStyle: hex_style}).addTo(map);
+          				L.hexLayer(geoData,  {
+                  applyStyle: hex_style
+              }).addTo(map);
           			}
           		);
 
@@ -126,17 +129,16 @@
           function hex_style(hexagons) {
               // Maintain a density scale relative to initial zoom level.
               if (!(max && scale)) {
-                  max = d3.max(hexagons.data(), function (d) { return d.length; });
+                  max = d3.max(hexagons.data(), function (d) { return d3.sum(d, function(d) { return d[2];}) });
+               //   min = d3.min(hexagons.data(), function (d) { return d3.sum(d, function(d) { return d[2];}) });
+               //   console.log(min, max);
                   scale = d3.scale.quantize()
                           .domain([0, max])
                           .range(d3.range(classes));
               }
-
-              hexagons
+		      hexagons
                   .attr("stroke", scheme[classes - 1])
-                  .attr("fill", function (d) {
-                      return scheme[scale(d.length)];
-                  });
+                  .attr("fill", function (d) { return scheme[scale(d3.sum(d, function(d) { return d[2];}))]; });
           }
       }());
     </script>

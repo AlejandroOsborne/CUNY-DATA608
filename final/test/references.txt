@@ -7,6 +7,7 @@ https://steven-hall-7eoj.squarespace.com/blog/2013/12/1/hexbins-with-d3-and-leaf
 
 https://leafletjs.com/examples/layers-control/
 
+https://bl.ocks.org/NGuernse/f36b4cc1b9d6860560df9245ab3c2b2b
 
 Q3
 Person responsible for arts education programs:
