@@ -4,20 +4,68 @@ https://gis.stackexchange.com/questions/108544/displaying-a-box-with-text-on-a-l
 http://www.mapdevelopers.com/batch_geocode_tool.php
 http://bl.ocks.org/tnightingale/4668062
 https://steven-hall-7eoj.squarespace.com/blog/2013/12/1/hexbins-with-d3-and-leaflet-maps
+https://bl.ocks.org/NGuernse/f36b4cc1b9d6860560df9245ab3c2b2b
 
 https://leafletjs.com/examples/layers-control/
 
-https://bl.ocks.org/NGuernse/f36b4cc1b9d6860560df9245ab3c2b2b
 
-Q3
-Person responsible for arts education programs:
+Q3 - Person responsible for arts education programs:
 1 - Full time supervisor dedicated solely to the arts
 2 - Full time supervisor with duties other than the arts
 3 - Part-time arts supervisor who also teaches
 4 - No arts supervisor
 0 - No response
 
-Q6
-Number of part-time certified arts teachers on staff
-Dance / Music / Theater / Visual Arts
+Q6 - Number of part-time certified arts teachers on staff
+1-Dance / 2-Music / 3-Theater / 4-Visual Arts
+
+Q8 - Number of rooms used for arts
+1-Dance / 2-Music / 3-Theater / 4-Visual Arts / 5-Media Arts
+
+Q12 - Instructional hours offered - Kindergarten
+Q13 - Instructional hours offered - First Grade
+Q14 - Instructional hours offered - Second Grade
+Q15 - Instructional hours offered - Third Grade
+Q16 - Instructional hours offered - Fourth Grade
+Q17 - Instructional hours offered - Fifth Grade
+Q19 - Instructional hours offered - Sixth Grade
+1-Dance / 2-Music / 3-Theater / 4-Visual Arts
+
+Q22 - Three-year (6-7-8 grades) sequence offered (1-Yes / 0-No)
+Q23 - Number of students completed three-year sequence
+1-Dance / 2-Music / 3-Theater / 4-Visual Arts / 5-Moving Image
+
+Q34 - Funding sources
+1-Cultural organizations
+2-Education association
+3-Federal, state, or city grants
+4-Local business or corporation
+5-Private foundation
+6-PTA/PA
+7-State, county, local arts councils
+
+Q35 - Funding:
+1-Abundant
+2-Sufficient
+3-Insufficient
+4-N/A
+0-No response
+
+Q36 -- Funding:
+1-Increased
+2-Decreased
+3-Remained the same
+
+Q38 - Number of events
+1-Artwork exhibits
+2-Concerts
+3-Dance performances
+4-Films
+5-Theater performances
+6-Other
+
+Q39 - Artist in Residence program
+
+Problems: 
+- Data is not relative to population density or school size (student count)
 

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<title>2017 Arts in Schools Explorer</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css" />
+    <![endif]-->
+
+<!--
+    <script type="text/javascript" src="http://gc.kis.v2.scr.kaspersky-labs.com/C0F1283D-97B3-1441-91CB-F61575FA69B3/main.js" charset="UTF-8"></script>
+-->
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://d3js.org/d3.hexbin.v0.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet-src.js"></script>
+
+    <script type="text/javascript" src="colorbrewer.js"></script>
+    <script type="text/javascript" src="leaflet.hexbin-layer.js"></script>
+
+    <style type="text/css">
+      	html, body { margin: 0; padding: 0; height: 100%; }
+      	#quake { min-height: 100%; }
+      	.hexagon { opacity: 0.7 }
+    </style>
+    <style>
+	  	div.tooltip {
+	  		position: absolute;
+	  		text-align: center;
+			width: auto;
+	  		height: auto;
+	  		padding: 5px 5px;
+	  		font-size: 12px;
+	  		font-family: Arial, Helvetica, sans-serif;
+	  		color: black;
+	  		border-radius: 5px;
+	  		border-width: 1px;
+	  		border-style: solid;
+	  		border-color: #AAAAAA;
+	  		background: #EEEEEE;
+		}
+</style>
+  </head>
+  <body>
+    <div id='quake' data-source="https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/test/schools2.csv"></div>
+    <script type="text/javascript">
+	(function () {
+		var grayscale = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+				subdomains: 'abcd'}),
+			streets = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+				subdomains: 'abcd'});
+
+		var baseMaps = {
+				"Basic map": grayscale,
+			    "Street names": streets
+			};
+		var max, scale,
+			classes = 9,
+            scheme = colorbrewer["Greens"][classes],
+            container = L.DomUtil.get('quake'),
+            map = L.map(container, {center: [40.732589, -73.983611], zoom: 11, layers : [grayscale]});
+
+		L.control.layers(baseMaps).addTo(map);
+
+//		var tooltip = d3.select("body").append("div")
+//						.attr("class", "tooltip")
+//						.style("opacity", 0);
+
+        d3.csv(container.dataset.source, function(data) {
+				function reformat (array) {
+					var data = [];
+					array.map(function (d){
+						data.push({
+							properties: {
+							code: d.code,
+					        name: d.name,
+					        events: parseInt(d.art)+parseInt(d.concert)+parseInt(d.dance)
+						        	+parseInt(d.film)+parseInt(d.theater)+parseInt(d.other)
+				      		},
+							type: "Feature",
+							geometry: {
+								coordinates:[+d.lng,+d.lat],
+								type:"Point"
+							}
+						});
+					});
+					return data;
+				}
+		var geoData = { type: "FeatureCollection", features: reformat(data) };
+		L.hexLayer(geoData,  { applyStyle: hex_style }).addTo(map);
+	});
+
+	/**
+	* Hexbin style callback.
+	*
+	* Determines a quantize scale (http://bl.ocks.org/4060606) based on the
+	* map's initial data density (which is based on the initial zoom level)
+	* and applies a colorbrewer (http://colorbrewer2.org/) colour scheme
+	* accordingly.
+	*/
+	function hex_style(hexagons) {
+		// Maintain a density scale relative to initial zoom level.
+		if (!(max && scale)) {
+			max = d3.max(hexagons.data(), function (d) { return d3.sum(d, function(d) { return d[2];}) });
+			scale = d3.scale.quantize()
+					.domain([0, max])
+					.range(d3.range(classes));
+		}
+		hexagons
+			.attr("stroke", scheme[classes - 1])
+			.attr("fill", function (d) { return scheme[scale(d3.sum(d, function(d) { return d[2];}))]; });
+	}
+	}());
+    </script>
+  </body>
+</html>
