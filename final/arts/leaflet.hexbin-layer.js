@@ -1,11 +1,10 @@
-L.HexLayer = L.Class.extend({
-    includes: L.Mixin.Events,
+L.HexLayer = L.Layer.extend({
+    includes: L.Evented.prototype,
 
     options: {
         minZoom: 0,
         maxZoom: 18,
-        padding: 100,
-        radius: 10
+        padding: 100
     },
 
     initialize: function (data, options) {
@@ -17,25 +16,18 @@ L.HexLayer = L.Class.extend({
 
     onAdd: function (map) {
         this._map = map;
-
-        // Create a container for svg.
         this._initContainer();
-
-        // Set up events
         map.on({
             'moveend': this._update
         }, this);
-
         this._update();
     },
 
     onRemove: function (map) {
-        this._container.parentNode.removeChild(this._container);
-
+		this._container._groups[0][0].parentNode.removeChild(this._container._groups[0][0]);
         map.off({
             'moveend': this._update
         }, this);
-
         this._container = null;
         this._map = null;
     },
@@ -50,12 +42,12 @@ L.HexLayer = L.Class.extend({
         if (!this._container || overlayPane.empty) {
             // TODO: Add optional ID attribute in the case of multiple layers.
             this._container = d3.select(overlayPane)
-                .append('svg').attr('class', 'leaflet-layer leaflet-zoom-hide');
+                .append('svg')
+                .attr('class', 'leaflet-layer leaflet-zoom-hide');
         }
     },
 
     _update: function () {
-
         if (!this._map) { return; }
 
         var zoom = this._map.getZoom();
@@ -63,15 +55,15 @@ L.HexLayer = L.Class.extend({
         if (zoom > this.options.maxZoom || zoom < this.options.minZoom) {
             return;
         }
-
         var padding = this.options.padding,
-            bounds = this._translateBounds(d3.geo.bounds(this._data));
+            bounds = this._translateBounds(d3.geoBounds(this._data));
             width = bounds.getSize().x + (2 * padding),
             height = bounds.getSize().y + (2 * padding),
             margin_top = bounds.min.y - padding,
             margin_left = bounds.min.x - padding;
 
         this._layout.size([width, height]);
+        this._layout.radius(this.options.radius);
         this._container.attr("width", width).attr("height", height)
             .style("margin-left", margin_left + "px").style("margin-top", margin_top + "px");
 
@@ -95,7 +87,7 @@ L.HexLayer = L.Class.extend({
         var tooltipHTML = "",
         	layout = this._layout,
             data = this._data.features.map(function (d) {
-                return this._project(d.geometry.coordinates, d.properties.events, d.properties.name);
+                return this._project(d.geometry.coordinates, d.properties);
             }, this),
             bins = layout(data),
             hexagons = container.selectAll(".hexagon").data(bins);
@@ -106,20 +98,22 @@ L.HexLayer = L.Class.extend({
 
         // Create hexagon elements when data is added.
         var path = hexagons.enter().append("path")
-        		.attr("class", "hexagon");
-        this._applyStyle(path);
-
-        // Position hexagon elements.
-        hexagons.attr("d", function (d) {
-		            // Setting "M" ensures each hexagon is drawn at its correct location.
-		            return "M" + d.x + "," + d.y + layout.hexagon();
-		        })
+        		.attr("class", "hexagon")
+        		.attr("d", function (d) { return "M" + d.x + "," + d.y + layout.hexagon(); })
 		        .on("mouseover", function(d) {
+					console.log(d);
 					tooltip.transition().duration(300).style("opacity", 1);
 					if (d.length == 1) {
-						tooltipHTML = d[0][3];
+						tooltipHTML = d[0][2].name+"<br>"+d[0][2].address+"<p>"+
+							"Artwork: "+d[0][2].events[0]+"<br>"+
+							"Concerts: "+d[0][2].events[1]+"<br>"+
+							"Dance: "+d[0][2].events[2]+"<br>"+
+							"Films: "+d[0][2].events[3]+"<br>"+
+							"Theater: "+d[0][2].events[4]+"<br>"+
+							"Other: "+d[0][2].events[5];
 					} else {
-						tooltipHTML = "Number of schools: "+d.length;
+						tooltipHTML = "Number of schools: "+d.length+"<br>"+
+							"Total events: "+d3.sum(d, function(d) { return d[2].events.reduce(function(a, b) { return a+b; });});
 					}
 					tooltip.html(tooltipHTML)
 						.style("top", (d3.event.pageY-25) + "px")
@@ -127,8 +121,8 @@ L.HexLayer = L.Class.extend({
 				})
 				.on("mouseout", function(d) {
 					tooltip.transition().duration(500).style("opacity", 0);
-				})
-		;
+				});
+		this._applyStyle(path);
     },
 
     _applyStyle: function (hexagons) {
@@ -137,9 +131,9 @@ L.HexLayer = L.Class.extend({
         }
     },
 
-    _project: function (x, w, n) {
+    _project: function (x, prop) {
         var point = this._map.latLngToLayerPoint([x[1], x[0]]);
-        return [point.x, point.y, w, n];
+        return [point.x, point.y, prop];
     },
 
     _translateBounds: function (d3_bounds) {
@@ -147,7 +141,6 @@ L.HexLayer = L.Class.extend({
             se = this._project([d3_bounds[1][0], d3_bounds[0][1]]);
         return L.bounds(nw, se);
     }
-
 });
 
 L.hexLayer = function (data, options) {
