@@ -43,7 +43,8 @@ L.HexLayer = L.Layer.extend({
             // TODO: Add optional ID attribute in the case of multiple layers.
             this._container = d3.select(overlayPane)
                 .append('svg')
-                .attr('class', 'leaflet-layer leaflet-zoom-hide');
+                .attr('class', 'leaflet-layer leaflet-zoom-hide')
+                .attr('pointer-events', 'all');
         }
     },
 
@@ -92,14 +93,15 @@ L.HexLayer = L.Layer.extend({
             bins = layout(data),
             hexagons = container.selectAll(".hexagon").data(bins);
 
-		var tooltip = d3.select("body").append("div")
-					.attr("class", "tooltip")
-					.style("opacity", 0);
+//		var tooltip = d3.select("body").append("div")
+//					.attr("class", "tooltip")
+//					.style("opacity", 0);
 
         // Create hexagon elements when data is added.
         var path = hexagons.enter().append("path")
         		.attr("class", "hexagon")
-        		.attr("d", function (d) { return "M" + d.x + "," + d.y + layout.hexagon(); })
+        		.attr("d", function (d) { return "M" + d.x + "," + d.y + layout.hexagon(); });
+        		/*
 		        .on("mouseover", function(d) {
 					console.log(d);
 					tooltip.transition().duration(300).style("opacity", 1);
@@ -121,7 +123,7 @@ L.HexLayer = L.Layer.extend({
 				})
 				.on("mouseout", function(d) {
 					tooltip.transition().duration(500).style("opacity", 0);
-				});
+				});*/
 		this._applyStyle(path);
     },
 

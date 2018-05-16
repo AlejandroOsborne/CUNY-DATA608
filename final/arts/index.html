@@ -11,13 +11,12 @@
    		crossorigin=""></script>
     <script src="https://d3js.org/d3-hexbin.v0.2.min.js"></script>
 
-    <script type="text/javascript" src="colorbrewer.js"></script>
     <script type="text/javascript" src="leaflet.hexbin-layer.js"></script>
 
     <style type="text/css">
       	html, body { margin: 0; padding: 0; height: 100%; }
-      	#schools { min-height: 95%; }
-      	.hexagon { opacity: 0.7 }
+      	#schools { min-height: 96%; }
+      	.hexagon { opacity: 0.7; }
     </style>
     <style>
 	  	div.tooltip {
@@ -34,18 +33,49 @@
 	  		border-style: solid;
 	  		border-color: #AAAAAA;
 	  		background: #EEEEEE;
-	  		pointer-events: none;
+	  		z-index: 1000;
 		}
-</style>
+	</style>
+	<style>
+		#label {
+      		color: #888;
+      		font-size: 12px;
+      		font-weight: bold;
+   	  		font-family: Arial, Helvetica, sans-serif;
+      		padding: 2px 5px 0px 20px;
+      		-webkit-appearance: none;
+		}
+
+		#comboSelect select {
+   			border: 1px solid #aaaaaa;
+      		color: #555555;
+      		font-size: 12px;
+      		font-weight: bold;
+   	  		font-family: Arial, Helvetica, sans-serif;
+      		padding: 2px 10px;
+      		background: #eeeeee;
+      		-webkit-appearance: none;
+		}
+
+		#comboSelect {
+   		   -moz-border-radius: 2px 2px 2px 2px;
+   		   -webkit-border-radius: 2px 2px 2px 2px;
+   		   border-radius: 2px 2px 2px 2px;
+		}
+	</style>
+
+</div>
 </head>
 <body>
-	<select id="hexRadius" onchange="updateRadius()">
+	<span id="label">Select Data Point Size:</span>
+	<span id="comboSelect">
+	<select id="hexRadius" onchange="updateDataLayer()" style="width: 50px">
 	  <option value="5">5
 	  <option value="6">6
-	  <option value="7">7
+	  <option selected="selected" value="7">7
 	  <option value="8">8
 	  <option value="9">9
-	  <option selected="selected" value="10">10
+	  <option value="10">10
 	  <option value="11">11
 	  <option value="12">12
 	  <option value="13">13
@@ -57,9 +87,19 @@
 	  <option value="19">19
   	  <option value="20">20
 	</select>
-
+	</span>
+	<span id="label">Select Data Set:</span>
+	<span id="comboSelect">
+	<select id="dataSet" onchange="updateDataLayer()" style="width: 250px">
+	  <option value="Q38">Number of events attended
+	  <option value="Q35">Funding level
+	  <option value="Q36">Funding trend
+	  <option value="Q39">Artist in Residence program
+	</select>
+	</span>
     <div id='schools' data-source="https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/arts/schools.csv"></div>
     <script type="text/javascript">
+    	// Backgound tiles
 		var grayscale = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
 				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
 				subdomains: 'abcd'}),
@@ -72,37 +112,15 @@
 			};
 		var max, scale, dataLayer,
 			classes = 9,
-            scheme = colorbrewer["Greens"][classes],
+            scheme = ["rgb(247,252,245)","rgb(229,245,224)","rgb(199,233,192)","rgb(161,217,155)","rgb(116,196,118)","rgb(65,171,93)","rgb(35,139,69)","rgb(0,109,44)","rgb(0,68,27)"],
             container = L.DomUtil.get('schools');
-		var map = L.map(container, {center: [40.732589, -73.983611], zoom: 11, layers : [grayscale]});
+        var map = L.map(container, {center: [40.732589, -73.983611], zoom: 11, layers : [grayscale]});
 
 		L.control.layers(baseMaps).addTo(map);
 
-        d3.csv(container.dataset.source).then(function(data) {
-				function reformat (array) {
-					var data = [];
-					array.map(function (d){
-						data.push({
-							properties: {
-							code: d.Code,
-					        name: d.Name,
-					        address: d.Address,
-					        events: [+d.Q38_1, +d.Q38_2, +d.Q38_3, +d.Q38_4, +d.Q38_5, +d.Q38_6]
-				      		},
-							type: "Feature",
-							geometry: {
-								coordinates:[+d.LongitudeShifted, +d.LatitudeShifted],
-								type:"Point"
-							}
-						});
-					});
-					return data;
-				}
-			geoData = { type: "FeatureCollection", features: reformat(data) };
-			dataLayer = L.hexLayer(geoData,  { applyStyle: hex_style, radius: 10 });
-			dataLayer.addTo(map);
-		});
+		updateDataLayer();
 
+		// PREPARE HEXAGON ATTRIBUTES
 		function hex_style(hexagons) {
 			// Maintain a density scale relative to initial zoom level.
 			if (!(max && scale)) {
@@ -116,36 +134,119 @@
 				.attr("fill", function (d) { return scheme[scale(d3.sum(d, function(d) { return d[2].events.reduce(function(a, b) { return a+b; });}))]; });
 		}
 
-		function updateRadius() {
-			var n = document.getElementById("hexRadius").value
-			map.removeLayer(dataLayer);
+		// DRAW DATA LAYER DEPENDING ON SELECTED OPTIONS
+		function updateDataLayer() {
+			var n = document.getElementById("hexRadius").value;
+			if (dataLayer) { map.removeLayer(dataLayer); }
 
-    	    d3.csv(container.dataset.source).then(function(data) {
-					function reformat (array) {
-						var data = [];
-						array.map(function (d){
-							data.push({
-								properties: {
-								code: d.Code,
-						        name: d.Name,
-						        address: d.Address,
-						        events: [+d.Q38_1, +d.Q38_2, +d.Q38_3, +d.Q38_4, +d.Q38_5, +d.Q38_6]
-					      		},
-								type: "Feature",
-								geometry: {
-									coordinates:[+d.LongitudeShifted, +d.LatitudeShifted],
-									type:"Point"
-								}
-							});
+			switch (document.getElementById("dataSet").value) {
+				case "Q38": // Number of events
+		    	    d3.csv(container.dataset.source).then(function(data) {
+							function reformat (array) {
+								var data = [];
+								array.map(function (d){
+									data.push({
+										properties: {
+										code: d.Code,
+								        name: d.Name,
+								        address: d.Address,
+								        events: [+d.Q38_1, +d.Q38_2, +d.Q38_3, +d.Q38_4, +d.Q38_5, +d.Q38_6]
+							      		},
+										type: "Feature",
+										geometry: {
+											coordinates:[+d.LongitudeShifted, +d.LatitudeShifted],
+											type:"Point"
+										}
+									});
+								});
+								return data;
+							}
+						geoData = { type: "FeatureCollection", features: reformat(data) };
+						dataLayer = L.hexLayer(geoData,  { applyStyle: hex_style, radius: n });
+						dataLayer.addTo(map);
+					});
+					break;
+				case "Q35": // Funding level
+					d3.csv(container.dataset.source).then(function(data) {
+						schools = data.map(function(d){
+						    d.coordinates = [+d.LatitudeShifted, +d.LongitudeShifted];
+						    d.value = +d.Q35;
+						    return d;
+					  	});
+						dataLayer = L.layerGroup();
+						schools.forEach(function(d){
+							var color = "#d3d3d3", comments = "No response or not applicable."; // Default
+						  	if (d.value==1) { color = "#387c36"; comments = "Funding for the arts is generally <b>abundant</b>."; }
+						  	if (d.value==2) { color = "#63e25f"; comments = "Funding for the arts is generally <b>sufficient</b>."; }
+						  	if (d.value==3) { color = "#c60f0f"; comments = "Funding for the arts is generally <b>insufficient</b>."; }
+							var options = { stroke:false, radius:n, weight:1, fillColor:color, fillOpacity:0.7,
+										html:d.Name+"<br>"+d.Address+"<br><br>"+comments };
+							L.circleMarker(d.coordinates, options)
+								.on("mouseover", onMouseOver)
+						    	.on("mouseout", onMouseOut)
+						        .addTo(dataLayer);
 						});
-						return data;
-					}
-				geoData = { type: "FeatureCollection", features: reformat(data) };
-				dataLayer = L.hexLayer(geoData,  { applyStyle: hex_style, radius: n });
-				dataLayer.addTo(map);
-			});
+						dataLayer.addTo(map);
+					});
+					break;
+				case "Q36": // Funding trend
+					d3.csv(container.dataset.source).then(function(data) {
+						schools = data.map(function(d){
+						    d.coordinates = [+d.LatitudeShifted, +d.LongitudeShifted];
+						    d.value = +d.Q36;
+						    return d;
+					  	});
+						dataLayer = L.layerGroup();
+						schools.forEach(function(d){
+							var color = "#d3d3d3", comments = "remained the same"; // Default
+						  	if (d.value==1) { color = "#387c36"; comments = "increased"; }
+						  	if (d.value==2) { color = "#c60f0f"; comments = "decreased"; }
+							var options = { stroke:false, radius:n, weight:1, fillColor:color, fillOpacity:0.7,
+										html:d.Name+"<br>"+d.Address+"<br><br>Funding over the past three years has <b>"+comments+"</b>." };
+							L.circleMarker(d.coordinates, options)
+								.on("mouseover", onMouseOver)
+						    	.on("mouseout", onMouseOut)
+						        .addTo(dataLayer);
+						});
+						dataLayer.addTo(map);
+					});
+					break;
+				case "Q39": // Artist in Residence program
+					d3.csv(container.dataset.source).then(function(data) {
+						schools = data.map(function(d){
+						    d.coordinates = [+d.LatitudeShifted, +d.LongitudeShifted];
+						    d.value = +d.Q39;
+						    return d;
+					  	});
+						dataLayer = L.layerGroup();
+						schools.forEach(function(d){
+							var color = "#c60f0f", comments = "School <b>does not</b> have an Artist in Residence program.";
+						  	if (d.value==1) { color = "#387c36"; comments = "School has an Artist in Residence program."; }
+							var options = { stroke:false, radius:n, weight:1, fillColor:color, fillOpacity:0.7,
+										html:d.Name+"<br>"+d.Address+"<br><br>"+comments };
+							L.circleMarker(d.coordinates, options)
+								.on("mouseover", onMouseOver)
+						    	.on("mouseout", onMouseOut)
+						        .addTo(dataLayer);
+						});
+						dataLayer.addTo(map);
+					});
+					break;
+			}
 		};
 
+	    function onMouseOver(e){
+	        var point = map.latLngToContainerPoint(e.latlng);
+	        var tooltip = d3.select(map.getContainer())
+	            .append("div")
+	            .attr("class", "tooltip")
+	            .html(e.target.options.html)
+	            .style("top", (point.y-25) + "px")
+	            .style("left", (point.x+10) + "px");
+	    }
+	    function onMouseOut(e){
+	        d3.select(map.getContainer()).select(".tooltip").remove();
+    	}
     </script>
   </body>
 </html>
