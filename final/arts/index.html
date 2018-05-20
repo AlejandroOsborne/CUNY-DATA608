@@ -15,33 +15,51 @@
 
     <style type="text/css">
       	html, body { margin: 0; padding: 0; height: 100%; }
-      	#schools { min-height: 96%; }
+      	#schools { min-height: 84%; }
       	.hexagon { opacity: 0.7; }
+      	.leaflet-pane > svg path { pointer-events: all; }
     </style>
     <style>
+    	table#tipTable {
+    		width: 100%;
+    		border: 0px;
+    		border-collapse: collapse;
+    	}
+    	table#tipTable tr:nth-child(even) {
+		    background-color: #f5f5f5;
+		}
 	  	div.tooltip {
 	  		position: absolute;
-	  		text-align: center;
+	  		text-align: left;
 			width: auto;
 	  		height: auto;
 	  		padding: 5px 5px;
 	  		font-size: 12px;
 	  		font-family: Arial, Helvetica, sans-serif;
 	  		color: black;
-	  		border-radius: 5px;
+	  		border-radius: 3px;
 	  		border-width: 1px;
 	  		border-style: solid;
 	  		border-color: #AAAAAA;
-	  		background: #EEEEEE;
+	  		background: #FFFFFF;
+	  		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 	  		z-index: 1000;
 		}
 	</style>
 	<style>
+		#header {
+			border-width: 1px;
+			border-style: solid;
+			border-color: #888;
+			padding: 10px;
+			color: #222222;
+			background-color: #fefefe;
+   	  		font-family: Arial, Helvetica, sans-serif;
+		}
 		#label {
       		color: #888;
       		font-size: 12px;
       		font-weight: bold;
-   	  		font-family: Arial, Helvetica, sans-serif;
       		padding: 2px 5px 0px 20px;
       		-webkit-appearance: none;
 		}
@@ -51,7 +69,6 @@
       		color: #555555;
       		font-size: 12px;
       		font-weight: bold;
-   	  		font-family: Arial, Helvetica, sans-serif;
       		padding: 2px 10px;
       		background: #eeeeee;
       		-webkit-appearance: none;
@@ -62,12 +79,45 @@
    		   -webkit-border-radius: 2px 2px 2px 2px;
    		   border-radius: 2px 2px 2px 2px;
 		}
+
+		#description {
+			font-size: 11px;
+			float: right;
+			color: #888;
+		}
+
+		#instructions {
+			color: #888;
+      		font-size: 11px;
+		}
 	</style>
 
 </div>
 </head>
 <body>
-	<span id="label">Select Data Point Size:</span>
+	<div id="header">
+	<div style="margin-bottom:10px">
+		<span>2017 Arts in Schools Explorer</span>
+		<span id="description">
+			Visualization is based on data collected by OASP survey for 2017 school year.
+			<br>
+			Additional information about OASP and the survey is available <a href="http://schools.nyc.gov/offices/teachlearn/arts/arts-count/annual-reporta.html" target="_blank">here</a>.
+		</span>
+	</div>
+	<span id="label">Select survey question:</span>
+	<span id="comboSelect">
+	<select id="dataSet" onchange="updateDataLayer()" style="width: 250px">
+	  <option value="Q38">Number of events attended
+	  <option value="Q6">Number of arts teachers on staff
+	  <option value="Q8">Number of rooms used for arts
+	  <option value="Q35">Funding level
+	  <option value="Q36">Funding trend
+	  <option value="Q39">Artist in Residence program
+	  <option value="Q3">Person responsible for arts programs
+	  <option value="Q19">Instructional hours offered: sixth grade
+	</select>
+	</span>
+	<span id="label">Adjust data point size:</span>
 	<span id="comboSelect">
 	<select id="hexRadius" onchange="updateDataLayer()" style="width: 50px">
 	  <option value="5">5
@@ -88,15 +138,9 @@
   	  <option value="20">20
 	</select>
 	</span>
-	<span id="label">Select Data Set:</span>
-	<span id="comboSelect">
-	<select id="dataSet" onchange="updateDataLayer()" style="width: 250px">
-	  <option value="Q38">Number of events attended
-	  <option value="Q35">Funding level
-	  <option value="Q36">Funding trend
-	  <option value="Q39">Artist in Residence program
-	</select>
-	</span>
+	<div id="instructions" style="margin-top:10px">
+	</div>
+	</div>
     <div id='schools' data-source="https://raw.githubusercontent.com/ilyakats/CUNY-DATA608/master/final/arts/schools.csv"></div>
     <script type="text/javascript">
     	// Backgound tiles
@@ -123,15 +167,15 @@
 		// PREPARE HEXAGON ATTRIBUTES
 		function hex_style(hexagons) {
 			// Maintain a density scale relative to initial zoom level.
-			if (!(max && scale)) {
-				max = d3.max(hexagons.data(), function (d) { return d3.sum(d, function(d) { return d[2].events.reduce(function(a, b) { return a+b; });}) });
-				scale = d3.scaleQuantize()
+			max = d3.max(hexagons.data(), function (d) { return d3.sum(d, function(d) { return d[2].events.reduce(function(a, b) { return a+b; });}) });
+			scale = d3.scaleQuantize()
 						.domain([0, max])
 						.range(d3.range(classes));
-			}
 			hexagons
 				.attr("stroke", scheme[classes - 1])
-				.attr("fill", function (d) { return scheme[scale(d3.sum(d, function(d) { return d[2].events.reduce(function(a, b) { return a+b; });}))]; });
+				.attr("fill", function (d) { return scheme[scale(d3.sum(d, function(d) { return d[2].events.reduce(function(a, b) { return a+b; });}))]; })
+				.on("mouseover", onMouseOver)
+				.on("mouseout", onMouseOut);
 		}
 
 		// DRAW DATA LAYER DEPENDING ON SELECTED OPTIONS
@@ -140,17 +184,20 @@
 			if (dataLayer) { map.removeLayer(dataLayer); }
 
 			switch (document.getElementById("dataSet").value) {
-				case "Q38": // Number of events
+				case "Q38": // NUMBER OF EVENTS
+					document.getElementById("instructions").innerHTML = "Showing number of arts opportunities that the students participated in at the school site and/or attended outside of the school."+
+						" You can choose a different survey question above.";
 		    	    d3.csv(container.dataset.source).then(function(data) {
 							function reformat (array) {
 								var data = [];
 								array.map(function (d){
 									data.push({
 										properties: {
-										code: d.Code,
-								        name: d.Name,
-								        address: d.Address,
-								        events: [+d.Q38_1, +d.Q38_2, +d.Q38_3, +d.Q38_4, +d.Q38_5, +d.Q38_6]
+											code: d.Code,
+								        	name: d.Name,
+								        	address: d.Address,
+								        	coordinates: [+d.LongitudeShifted, +d.LatitudeShifted],
+								        	events: [+d.Q38_1, +d.Q38_2, +d.Q38_3, +d.Q38_4, +d.Q38_5, +d.Q38_6]
 							      		},
 										type: "Feature",
 										geometry: {
@@ -166,7 +213,96 @@
 						dataLayer.addTo(map);
 					});
 					break;
-				case "Q35": // Funding level
+				case "Q6": // NUMBER OF PART-TIME CERTIFIED ARTS TEACHERS ON STAFF
+					document.getElementById("instructions").innerHTML = "Showing number of part-time certified arts teachers that are on school's staff."+
+						" You can choose a different survey question above.";
+		    	    d3.csv(container.dataset.source).then(function(data) {
+							function reformat (array) {
+								var data = [];
+								array.map(function (d){
+									data.push({
+										properties: {
+											code: d.Code,
+								        	name: d.Name,
+								        	address: d.Address,
+								        	coordinates: [+d.LongitudeShifted, +d.LatitudeShifted],
+								        	events: [+d.Q6_1, +d.Q6_2, +d.Q6_3, +d.Q6_4]
+							      		},
+										type: "Feature",
+										geometry: {
+											coordinates:[+d.LongitudeShifted, +d.LatitudeShifted],
+											type:"Point"
+										}
+									});
+								});
+								return data;
+							}
+						geoData = { type: "FeatureCollection", features: reformat(data) };
+						dataLayer = L.hexLayer(geoData,  { applyStyle: hex_style, radius: n });
+						dataLayer.addTo(map);
+					});
+					break;
+				case "Q8": // NUMBER OF ROOMS
+					document.getElementById("instructions").innerHTML = "Showing number of multi-purpose classrooms used for arts education and rooms designed and used solely for the arts."+
+						" You can choose a different survey question above.";
+		    	    d3.csv(container.dataset.source).then(function(data) {
+							function reformat (array) {
+								var data = [];
+								array.map(function (d){
+									data.push({
+										properties: {
+											code: d.Code,
+								        	name: d.Name,
+								        	address: d.Address,
+								        	coordinates: [+d.LongitudeShifted, +d.LatitudeShifted],
+								        	events: [+d.Q8_1, +d.Q8_2, +d.Q8_3, +d.Q8_4, +d.Q8_5]
+							      		},
+										type: "Feature",
+										geometry: {
+											coordinates:[+d.LongitudeShifted, +d.LatitudeShifted],
+											type:"Point"
+										}
+									});
+								});
+								return data;
+							}
+						geoData = { type: "FeatureCollection", features: reformat(data) };
+						dataLayer = L.hexLayer(geoData,  { applyStyle: hex_style, radius: n });
+						dataLayer.addTo(map);
+					});
+					break;
+				case "Q19": // INSTRUCTIONAL HOURS OFFERED - SIXTH GRADE
+					document.getElementById("instructions").innerHTML = "Showing number of documented in-school instructional hours provided to sixth grade students."+
+						" You can choose a different survey question above.";
+		    	    d3.csv(container.dataset.source).then(function(data) {
+							function reformat (array) {
+								var data = [];
+								array.map(function (d){
+									data.push({
+										properties: {
+											code: d.Code,
+								        	name: d.Name,
+								        	address: d.Address,
+								        	coordinates: [+d.LongitudeShifted, +d.LatitudeShifted],
+								        	events: [+d.Q19_1, +d.Q19_2, +d.Q19_3, +d.Q19_4]
+							      		},
+										type: "Feature",
+										geometry: {
+											coordinates:[+d.LongitudeShifted, +d.LatitudeShifted],
+											type:"Point"
+										}
+									});
+								});
+								return data;
+							}
+						geoData = { type: "FeatureCollection", features: reformat(data) };
+						dataLayer = L.hexLayer(geoData,  { applyStyle: hex_style, radius: n });
+						dataLayer.addTo(map);
+					});
+					break;
+				case "Q35": // FUNDING LEVEL
+					document.getElementById("instructions").innerHTML = "Showing school's response regarding level of funding for the arts."+
+						" You can choose a different survey question above.";
 					d3.csv(container.dataset.source).then(function(data) {
 						schools = data.map(function(d){
 						    d.coordinates = [+d.LatitudeShifted, +d.LongitudeShifted];
@@ -189,7 +325,9 @@
 						dataLayer.addTo(map);
 					});
 					break;
-				case "Q36": // Funding trend
+				case "Q36": // FUNDING TREND
+					document.getElementById("instructions").innerHTML = "Showing school's response regarding level of funding over the past three years."+
+						" You can choose a different survey question above.";
 					d3.csv(container.dataset.source).then(function(data) {
 						schools = data.map(function(d){
 						    d.coordinates = [+d.LatitudeShifted, +d.LongitudeShifted];
@@ -211,7 +349,9 @@
 						dataLayer.addTo(map);
 					});
 					break;
-				case "Q39": // Artist in Residence program
+				case "Q39": // ARTIST IN RESIDENCE PROGRAM
+					document.getElementById("instructions").innerHTML = "Showing schools with and without Artist in Residence program."+
+						" You can choose a different survey question above.";
 					d3.csv(container.dataset.source).then(function(data) {
 						schools = data.map(function(d){
 						    d.coordinates = [+d.LatitudeShifted, +d.LongitudeShifted];
@@ -232,17 +372,113 @@
 						dataLayer.addTo(map);
 					});
 					break;
+				case "Q3": // PERSON RESPONSIBLE FOR ARTS EDUCATION PROGRAMS
+					document.getElementById("instructions").innerHTML = "Showing the role of the person who is responsible for the implementation and evaluation of arts education programs."+
+						" You can choose a different survey question above.";
+					d3.csv(container.dataset.source).then(function(data) {
+						schools = data.map(function(d){
+						    d.coordinates = [+d.LatitudeShifted, +d.LongitudeShifted];
+						    d.value = +d.Q3;
+						    return d;
+					  	});
+						dataLayer = L.layerGroup();
+						schools.forEach(function(d){
+							var color = "#d3d3d3", comments = "No response provided"; // Default
+						  	if (d.value==1) { color = "#00ff00"; comments = "School has <b>full time supervisor dedicated solely to the arts</b>"; }
+						  	if (d.value==2) { color = "#5eff5e"; comments = "School has <b>full time supervisor with duties other than the arts</b>"; }
+							if (d.value==3) { color = "#afffaf"; comments = "School has <b>part-time arts supervisor who also teaches</b>"; }
+							if (d.value==4) { color = "#88ccee"; comments = "School has <b>no arts supervisor</b>"; }
+							var options = { stroke:false, radius:n, weight:1, fillColor:color, fillOpacity:0.7,
+										html:d.Name+"<br>"+d.Address+"<br><br>"+comments+"." };
+							L.circleMarker(d.coordinates, options)
+								.on("mouseover", onMouseOver)
+						    	.on("mouseout", onMouseOut)
+						        .addTo(dataLayer);
+						});
+						dataLayer.addTo(map);
+					});
+					break;
 			}
 		};
 
 	    function onMouseOver(e){
-	        var point = map.latLngToContainerPoint(e.latlng);
-	        var tooltip = d3.select(map.getContainer())
-	            .append("div")
-	            .attr("class", "tooltip")
-	            .html(e.target.options.html)
-	            .style("top", (point.y-25) + "px")
-	            .style("left", (point.x+10) + "px");
+	    	if (typeof e.latlng == "undefined") {
+	    		var count = d3.sum(e, function(d) { return d[2].events.reduce(function(a, b) { return a+b; });});
+	    		switch (document.getElementById("dataSet").value) {
+	    			case "Q38":
+			    		if (e.length>1) {
+			    			var tipHTML = "Hexagon represents " + e.length + " schools with " + count + " total events.";
+			    		} else {
+			    			var tipHTML = e[0][2].name + "<br>" + e[0][2].address + "<br><br>" +
+											"<table id='tipTable'>"+
+											"<tr><td>Artwork exhibits</td><td align='right'>"     + e[0][2].events[0] + "</td></tr>"+
+											"<tr><td>Concerts</td><td align='right'>"             + e[0][2].events[1] + "</td></tr>"+
+											"<tr><td>Dance performances</td><td align='right'>"   + e[0][2].events[2] + "</td></tr>"+
+											"<tr><td>Films</td><td align='right'>"                + e[0][2].events[3] + "</td></tr>"+
+											"<tr><td>Theater performances</td><td align='right'>" + e[0][2].events[4] + "</td></tr>"+
+											"<tr><td>Other</td><td align='right'>"                + e[0][2].events[5] + "</td></tr>"+
+											"</table>";
+			    		}
+			    		break;
+	    			case "Q6":
+			    		if (e.length>1) {
+			    			if (count==0) { var tipHTML = "Hexagon represents " + e.length + " schools with no part-time certified arts teachers on staff."; };
+			    			if (count==1) { var tipHTML = "Hexagon represents " + e.length + " schools with 1 part-time certified arts teacher on staff."; };
+			    			if (count>1) { var tipHTML = "Hexagon represents " + e.length + " schools with " + count + " part-time certified arts teachers on staff."; };
+			    		} else {
+			    			var tipHTML = e[0][2].name + "<br>" + e[0][2].address + "<br><br>" +
+											"<table id='tipTable'>"+
+											"<tr><td>Dance</td><td align='right'>"     + e[0][2].events[0] + "</td></tr>"+
+											"<tr><td>Music</td><td align='right'>"             + e[0][2].events[1] + "</td></tr>"+
+											"<tr><td>Theater</td><td align='right'>"   + e[0][2].events[2] + "</td></tr>"+
+											"<tr><td>Visual arts</td><td align='right'>"                + e[0][2].events[3] + "</td></tr>"+
+											"</table>";
+			    		}
+			    		break;
+	    			case "Q8":
+			    		if (e.length>1) {
+			    			var tipHTML = "Hexagon represents " + e.length + " schools with " + count + " rooms used for arts.";
+			    		} else {
+			    			var tipHTML = e[0][2].name + "<br>" + e[0][2].address + "<br><br>" +
+											"<table id='tipTable'>"+
+											"<tr><td>Dance</td><td align='right'>"     + e[0][2].events[0] + "</td></tr>"+
+											"<tr><td>Music</td><td align='right'>"             + e[0][2].events[1] + "</td></tr>"+
+											"<tr><td>Theater</td><td align='right'>"   + e[0][2].events[2] + "</td></tr>"+
+											"<tr><td>Visual arts</td><td align='right'>"                + e[0][2].events[3] + "</td></tr>"+
+											"<tr><td>Media arts</td><td align='right'>" + e[0][2].events[4] + "</td></tr>"+
+											"</table>";
+			    		}
+			    		break;
+	    			case "Q19":
+			    		if (e.length>1) {
+			    			var tipHTML = "Hexagon represents " + e.length + " schools with " + count + " instructional hours offered.";
+			    		} else {
+			    			var tipHTML = e[0][2].name + "<br>" + e[0][2].address + "<br><br>" +
+											"<table id='tipTable'>"+
+											"<tr><td>Dance</td><td align='right'>"     + e[0][2].events[0] + "</td></tr>"+
+											"<tr><td>Music</td><td align='right'>"             + e[0][2].events[1] + "</td></tr>"+
+											"<tr><td>Theater</td><td align='right'>"   + e[0][2].events[2] + "</td></tr>"+
+											"<tr><td>Visual arts</td><td align='right'>"                + e[0][2].events[3] + "</td></tr>"+
+											"</table>";
+			    		}
+			    		break;
+	    		}
+	    		var point = map.latLngToContainerPoint({ lng: e[0][2].coordinates[0], lat: e[0][2].coordinates[1] });
+		        var tooltip = d3.select(map.getContainer())
+		            .append("div")
+		            .attr("class", "tooltip")
+		            .html(tipHTML)
+		            .style("top", (point.y-25) + "px")
+		            .style("left", (point.x+10+parseInt(document.getElementById("hexRadius").value)) + "px");
+	        } else {
+		        var point = map.latLngToContainerPoint(e.latlng);
+		        var tooltip = d3.select(map.getContainer())
+		            .append("div")
+		            .attr("class", "tooltip")
+		            .html(e.target.options.html)
+		            .style("top", (point.y-25) + "px")
+		            .style("left", (point.x+10) + "px");
+			}
 	    }
 	    function onMouseOut(e){
 	        d3.select(map.getContainer()).select(".tooltip").remove();

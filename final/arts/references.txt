@@ -1,3 +1,4 @@
+REFERENCES:
 http://bl.ocks.org/xEviL/4921fff1d70f5601d159
 http://bl.ocks.org/emeeks/f8c0220c54ec8347ea95
 https://gis.stackexchange.com/questions/108544/displaying-a-box-with-text-on-a-leaflet-map
@@ -5,7 +6,6 @@ http://www.mapdevelopers.com/batch_geocode_tool.php
 http://bl.ocks.org/tnightingale/4668062
 https://steven-hall-7eoj.squarespace.com/blog/2013/12/1/hexbins-with-d3-and-leaflet-maps
 https://bl.ocks.org/NGuernse/f36b4cc1b9d6860560df9245ab3c2b2b
-
 https://leafletjs.com/examples/layers-control/
 
 
@@ -68,4 +68,4 @@ Q39 - Artist in Residence program
 
 Problems: 
 - Data is not relative to population density or school size (student count)
-
+- Sixth grade data is deceptive because not all schools have 6th grade
